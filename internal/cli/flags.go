@@ -11,8 +11,9 @@ Dir: Directory to scan for files
 Word: Word to search for in the files
 */
 type Arguments struct {
-	Dir  string
-	Word string
+	Dir        string
+	Word       string
+	MaxWorkers int
 }
 
 /*
@@ -22,6 +23,7 @@ If there are no flags given for the CLI, return an error otherwise return the Ar
 func ParseFlags() (*Arguments, error) {
 	dir := flag.String("dir", "", "Directory to scan for files")
 	word := flag.String("word", "", "Word to search for")
+	maxWorkers := flag.Int("max-workers", 10, "Maximum number of workers")
 
 	flag.Parse()
 
@@ -30,7 +32,8 @@ func ParseFlags() (*Arguments, error) {
 	}
 
 	return &Arguments{
-		Dir:  *dir,
-		Word: *word,
+		Dir:        *dir,
+		Word:       *word,
+		MaxWorkers: *maxWorkers,
 	}, nil
 }
