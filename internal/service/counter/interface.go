@@ -18,4 +18,8 @@ type ICounter interface {
 	runTask(task func())
 	// Count the number of times a word is found starting from the root directory recursively
 	Count() <-chan error
+	// Looks for the directory inside of the root
+	LookForDirectory(path string) (string, error)
+	// Update the root path
+	UpdateRoot(path string)
 }
