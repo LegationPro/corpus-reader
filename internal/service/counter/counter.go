@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
@@ -87,6 +88,43 @@ func (c *counter) Increment(amount int) error {
 	c.count.Add(uint64(amount))
 
 	return nil
+}
+
+// Update the root path
+func (c *counter) UpdateRoot(path string) {
+	c.root = path
+}
+
+/*
+Look for a directory with the given name under the root directory.
+The function returns the path to the directory if found, otherwise it throws an error.
+*/
+func (c *counter) LookForDirectory(directoryName string) (string, error) {
+	var foundPath string
+
+	err := filepath.WalkDir(c.root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			log.Printf("Please worok here: %v", err)
+			return err
+		}
+
+		if d.IsDir() && d.Name() == directoryName {
+			foundPath = filepath.Join(c.root, path)
+			return nil
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if foundPath == "" {
+		return "", fmt.Errorf("directory '%s' not found under root '%s'", directoryName, c.root)
+	}
+
+	return foundPath, nil
 }
 
 // Count the number of times a word is found in a file
