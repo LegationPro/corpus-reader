@@ -33,7 +33,7 @@ func (h *Handler) HandleCounter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Initialize a new counter instance
-	// The root directory should ALWAYS be set to corpus
+	// The root directory should be set to the RootDirectory constant
 	counterInstance := counter.New(request.Word, RootDirectory, h.maxWorkers)
 
 	// Start counting and process errors
