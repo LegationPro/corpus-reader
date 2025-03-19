@@ -1,6 +1,6 @@
 .PHONY: cli
 cli:
-	go run cmd/cli/cli.go --dir $(dir) --word $(word)
+	go run cmd/cli/cli.go $(ARGS)
 
 .PHONY: server
 server:
