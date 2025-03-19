@@ -184,7 +184,8 @@ an effective way to manage synchronization.
 */
 
 func (c *Counter) Count() <-chan error {
-	errChan := make(chan error)
+	// Use a buffered channel to prevent blocking
+	errChan := make(chan error, 100)
 
 	// Start processing the root directory
 	c.runTask(func() {
