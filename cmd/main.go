@@ -14,7 +14,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	counterService := counter.New(parsedArgs.Word, parsedArgs.Dir)
+	counterService := counter.New(parsedArgs.Word, parsedArgs.Dir, parsedArgs.MaxWorkers)
 	errChan := counterService.Count()
 
 	// Read errors from the channel
