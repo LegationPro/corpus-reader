@@ -24,7 +24,7 @@ it performs increments and read operations without locking.
 */
 type Counter struct {
 	wg    sync.WaitGroup
-	count uint64
+	count atomic.Uint64
 	word  string
 	root  string
 }
@@ -32,15 +32,20 @@ type Counter struct {
 // Create a new counter instance
 func New(word string, rootDir string) ICounter {
 	return &Counter{
-		count: 0,
+		count: atomic.Uint64{},
 		word:  word,
 		root:  rootDir,
 	}
 }
 
+// Reset the counter
+func (c *Counter) Reset() {
+	c.count.Store(0)
+}
+
 // Return the current count
 func (c *Counter) GetCount() uint64 {
-	return atomic.LoadUint64(&c.count)
+	return c.count.Load()
 }
 
 // Increment count by a given amount
@@ -54,7 +59,7 @@ func (c *Counter) Increment(amount int) error {
 		return errors.New("amount must be non-negative value")
 	}
 
-	atomic.AddUint64(&c.count, uint64(amount))
+	c.count.Add(uint64(amount))
 
 	return nil
 }
@@ -93,7 +98,7 @@ func (c *Counter) countWord(filePath string) error {
 		lineCount := bytes.Count(lineBytes, wordBytes)
 
 		// Increment the global counter atomically for each occurrence to ensure thread safety
-		atomic.AddUint64(&c.count, uint64(lineCount))
+		c.count.Add(uint64(lineCount))
 	}
 
 	return nil
@@ -158,14 +163,9 @@ an effective way to manage synchronization.
 func (c *Counter) Count() <-chan error {
 	errChan := make(chan error)
 
-	// Start processing the root directory by spawning a new goroutine
+	// Start processing the root directory
 	c.wg.Add(1)
-
-	go func() {
-		// Ensure wg.Done() is called
-		defer c.wg.Done()
-		c.processDirectory(c.root, errChan)
-	}()
+	go c.processDirectory(c.root, errChan)
 
 	// Wait for all goroutines to complete and close the error channel
 	go func() {
