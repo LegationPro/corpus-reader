@@ -44,6 +44,7 @@ func New(config Config) *Server {
 func (s *Server) Start() {
 	s.logger.Info("Server running on: " + s.config.Addr)
 
+	// Initialize the server instance
 	s.server = &http.Server{
 		Addr:         s.config.Addr,
 		Handler:      s.handler,
@@ -58,11 +59,13 @@ func (s *Server) Start() {
 	// Setup the routes
 	s.SetupRoutes(h)
 
+	// Start the sserver and handle any possible errors
 	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		s.logger.Error(fmt.Sprintf("Failed to start server: %v", err))
 	}
 }
 
+// Shutdown the server application gracefully
 func (s *Server) Stop() {
 	s.logger.Info("Shutting down server")
 
