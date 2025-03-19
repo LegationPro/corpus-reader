@@ -10,16 +10,14 @@ func BenchmarkCounterService(b *testing.B) {
 	// CLI flag arguments
 	rootDir := "../corpus"
 	word := "john"
+	maxWorkers := 10
 
-	counterService := counter.New(word, rootDir)
-
-	// Reset timer to exclude setup time
-	b.ResetTimer()
+	counterService := counter.New(word, rootDir, maxWorkers)
 
 	// Track memory usage
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		counterService.Reset()
 		errChan := counterService.Count()
 
