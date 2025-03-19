@@ -4,4 +4,4 @@ cli:
 
 .PHONY: server
 server:
-	go run cmd/server/server.go
+	go run cmd/server/server.go $(ARGS)
