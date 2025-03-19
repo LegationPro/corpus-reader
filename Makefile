@@ -9,5 +9,5 @@ server:
 
 .PHONY: build
 build:
-	go build cmd/server/server.go
-	go build cmd/cli/cli.go
+	go build -o bin/server cmd/server/server.go
+	go build -o bin/cli cmd/cli/cli.go
