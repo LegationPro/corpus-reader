@@ -130,8 +130,6 @@ func (c *Counter) countWord(filePath string) error {
 }
 
 func (c *Counter) processFile(path string, ch chan<- error) {
-	// defer c.wg.Done() // Decrement WaitGroup counter
-
 	// Skip non-text files
 	if !strings.HasSuffix(path, ".txt") {
 		ch <- nil
@@ -150,9 +148,6 @@ func (c *Counter) processFile(path string, ch chan<- error) {
 }
 
 func (c *Counter) processDirectory(dirPath string, errChan chan<- error) {
-	// Ensure wg.Done() is called to signal completion regardless of how the function exists
-	// defer c.wg.Done()
-
 	err := filepath.WalkDir(dirPath, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
