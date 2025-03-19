@@ -104,12 +104,11 @@ func (c *counter) LookForDirectory(directoryName string) (string, error) {
 
 	err := filepath.WalkDir(c.root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			log.Printf("Please worok here: %v", err)
 			return err
 		}
 
 		if d.IsDir() && d.Name() == directoryName {
-			foundPath = filepath.Join(c.root, path)
+			foundPath = filepath.Join(c.root, directoryName)
 			return nil
 		}
 
