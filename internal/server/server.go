@@ -42,15 +42,21 @@ func New(config Config) *Server {
 }
 
 func (s *Server) Start() {
-	s.logger.Info("Starting server on address: " + s.config.Addr)
+	s.logger.Info("Server running on: " + s.config.Addr)
 
 	s.server = &http.Server{
 		Addr:         s.config.Addr,
-		Handler:      http.NewServeMux(),
+		Handler:      s.handler,
 		ReadTimeout:  s.config.ReadTimeout,
 		WriteTimeout: s.config.WriteTimeout,
 		IdleTimeout:  s.config.IdleTimeout,
 	}
+
+	// Initialize the handler
+	h := NewHandler(s.logger)
+
+	// Setup the routes
+	s.SetupRoutes(h)
 
 	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		s.logger.Error(fmt.Sprintf("Failed to start server: %v", err))
