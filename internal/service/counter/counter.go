@@ -171,7 +171,7 @@ func (c *Counter) Count() <-chan error {
 	go func() {
 		c.wg.Wait()
 		close(errChan)
-		log.Printf("Finished counting: %d", c.count)
+		log.Printf("Finished counting: %d", c.count.Load())
 	}()
 
 	return errChan
