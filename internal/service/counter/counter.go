@@ -25,7 +25,7 @@ it performs increments and read operations without locking.
 The worker pool is used to limit the number of concurrent workers.
 It uses a buffered channel to limit concurrency.
 */
-type Counter struct {
+type counter struct {
 	wg         sync.WaitGroup
 	count      atomic.Uint64
 	word       string
@@ -35,7 +35,7 @@ type Counter struct {
 
 // Create a new counter instance
 func New(word string, rootDir string, maxWorkers int) ICounter {
-	return &Counter{
+	return &counter{
 		count:      atomic.Uint64{},
 		word:       word,
 		root:       rootDir,
@@ -44,7 +44,7 @@ func New(word string, rootDir string, maxWorkers int) ICounter {
 }
 
 // Helper function for running tasks with worker pool
-func (c *Counter) runTask(task func()) {
+func (c *counter) runTask(task func()) {
 	// Increment WaitGroup counter
 	c.wg.Add(1)
 
@@ -64,17 +64,17 @@ func (c *Counter) runTask(task func()) {
 }
 
 // Reset the counter
-func (c *Counter) Reset() {
+func (c *counter) Reset() {
 	c.count.Store(0)
 }
 
 // Return the current count
-func (c *Counter) GetCount() uint64 {
+func (c *counter) GetCount() uint64 {
 	return c.count.Load()
 }
 
 // Increment count by a given amount
-func (c *Counter) Increment(amount int) error {
+func (c *counter) Increment(amount int) error {
 	/*
 		Validation check for ensuring that the amount is non-negative.
 		In a scenario, where a number would be negative and converted to a uint64,
@@ -90,7 +90,7 @@ func (c *Counter) Increment(amount int) error {
 }
 
 // Count the number of times a word is found in a file
-func (c *Counter) countWord(filePath string) error {
+func (c *counter) countWord(filePath string) error {
 	file, err := os.Open(filePath)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func (c *Counter) countWord(filePath string) error {
 	return nil
 }
 
-func (c *Counter) processFile(path string, ch chan<- error) {
+func (c *counter) processFile(path string, ch chan<- error) {
 	// Skip non-text files
 	if !strings.HasSuffix(path, ".txt") {
 		ch <- nil
@@ -147,7 +147,7 @@ func (c *Counter) processFile(path string, ch chan<- error) {
 	}
 }
 
-func (c *Counter) processDirectory(dirPath string, errChan chan<- error) {
+func (c *counter) processDirectory(dirPath string, errChan chan<- error) {
 	err := filepath.WalkDir(dirPath, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -183,7 +183,7 @@ The use of a worker pool allows for concurrent processing of files, directories 
 an effective way to manage synchronization.
 */
 
-func (c *Counter) Count() <-chan error {
+func (c *counter) Count() <-chan error {
 	// Use a buffered channel to prevent blocking
 	errChan := make(chan error, 100)
 
