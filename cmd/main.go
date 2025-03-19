@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"time"
 
 	"github.com/LegationPro/corpus-reader/internal/cli"
 	"github.com/LegationPro/corpus-reader/internal/service/counter"
@@ -14,9 +13,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Benchmark timer for the counterService
-	startTime := time.Now()
 
 	counterService := counter.New(parsedArgs.Word, parsedArgs.Dir)
 	errChan := counterService.Count()
@@ -32,9 +28,5 @@ func main() {
 		log.Fatalf("error when counting word: %v", err)
 	}
 
-	// Calculate elapsed time
-	duration := time.Since(startTime)
-
 	log.Printf("Word '%s' found %d times\n", parsedArgs.Word, counterService.GetCount())
-	log.Printf("Duration: %s", duration)
 }
