@@ -41,3 +41,10 @@ curl -X POST -H "Content-Type: application/json" -d '{"directory":"corpus", "wor
 - Include tests, documentation, and benchmarks if necessary.
 - Follow Git best practices.
 - You are welcome to enhance the challenge in any manner you prefer.
+
+
+# Running the application :
+
+# make server ARGS="--addr :9090 --read-timeout 10s --write-timeout 10s --idle-timeout 150s"
+
+# make cli ARGS="--dir ./corpus --word john"
