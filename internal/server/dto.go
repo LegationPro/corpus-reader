@@ -9,8 +9,7 @@ type CounterRequest struct {
 
 // DTO (Data-Transfer-Object) for counter response
 type CounterResponse struct {
-	Count     int    `json:"count"`
-	Directory string `json:"directory"`
+	Count int `json:"count"`
 }
 
 // DTO (Data-Transfer-Object) for error response
