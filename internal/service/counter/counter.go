@@ -21,21 +21,46 @@ We use atomic operations to ensure thread safety.
 
 We prioritize the use of atomic operations over mutexes for the count since
 it performs increments and read operations without locking.
+
+The worker pool is used to limit the number of concurrent workers.
+It uses a buffered channel to limit concurrency.
 */
 type Counter struct {
-	wg    sync.WaitGroup
-	count atomic.Uint64
-	word  string
-	root  string
+	wg         sync.WaitGroup
+	count      atomic.Uint64
+	word       string
+	root       string
+	workerPool chan struct{}
 }
 
 // Create a new counter instance
-func New(word string, rootDir string) ICounter {
+func New(word string, rootDir string, maxWorkers int) ICounter {
 	return &Counter{
-		count: atomic.Uint64{},
-		word:  word,
-		root:  rootDir,
+		count:      atomic.Uint64{},
+		word:       word,
+		root:       rootDir,
+		workerPool: make(chan struct{}, maxWorkers),
 	}
+}
+
+// Helper function for running tasks with worker pool
+func (c *Counter) runTask(task func()) {
+	// Increment WaitGroup counter
+	c.wg.Add(1)
+
+	go func() {
+		// Decrement WaitGroup counter
+		defer c.wg.Done()
+
+		// Acquire a worker slot from the pool
+		c.workerPool <- struct{}{}
+
+		// Release the worker slot from the pool
+		defer func() { <-c.workerPool }()
+
+		// Execute the task
+		task()
+	}()
 }
 
 // Reset the counter
@@ -105,7 +130,7 @@ func (c *Counter) countWord(filePath string) error {
 }
 
 func (c *Counter) processFile(path string, ch chan<- error) {
-	defer c.wg.Done() // Decrement WaitGroup counter
+	// defer c.wg.Done() // Decrement WaitGroup counter
 
 	// Skip non-text files
 	if !strings.HasSuffix(path, ".txt") {
@@ -126,7 +151,7 @@ func (c *Counter) processFile(path string, ch chan<- error) {
 
 func (c *Counter) processDirectory(dirPath string, errChan chan<- error) {
 	// Ensure wg.Done() is called to signal completion regardless of how the function exists
-	defer c.wg.Done()
+	// defer c.wg.Done()
 
 	err := filepath.WalkDir(dirPath, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
@@ -136,21 +161,24 @@ func (c *Counter) processDirectory(dirPath string, errChan chan<- error) {
 		if info.IsDir() {
 			// Skip processing the directory itself to avoid infinite recursion
 			if dirPath != path {
-				c.wg.Add(1)
-				go c.processDirectory(path, errChan)
+				c.runTask(func() {
+					c.processDirectory(path, errChan)
+				})
 			}
 			return nil
 		}
 
 		// Dispatch file to a worker for processing
-		c.wg.Add(1)
-		go c.processFile(path, errChan)
+		c.runTask(func() {
+			c.processFile(path, errChan)
+		})
 
 		return nil
 	})
 
 	if err != nil {
-		errChan <- err // Send error to channel
+		// Send error to channel
+		errChan <- err
 	}
 }
 
@@ -164,8 +192,9 @@ func (c *Counter) Count() <-chan error {
 	errChan := make(chan error)
 
 	// Start processing the root directory
-	c.wg.Add(1)
-	go c.processDirectory(c.root, errChan)
+	c.runTask(func() {
+		c.processDirectory(c.root, errChan)
+	})
 
 	// Wait for all goroutines to complete and close the error channel
 	go func() {
