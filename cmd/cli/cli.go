@@ -8,12 +8,14 @@ import (
 )
 
 func main() {
+	// Parse the flags from the CLI
 	parsedArgs, err := cli.ParseFlags()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Create a new counter service
 	counterService := counter.New(parsedArgs.Word, parsedArgs.Dir, parsedArgs.MaxWorkers)
 	errChan := counterService.Count()
 
