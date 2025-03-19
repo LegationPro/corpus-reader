@@ -49,6 +49,13 @@ func (c *counter) runTask(task func()) {
 	// Increment WaitGroup counter
 	c.wg.Add(1)
 
+	/*
+		The defers are executed in a specific order (LIFO - Last In First Out)
+		1. c.wg.Done() - Decrement WaitGroup counter
+		2. <-c.workerPool - Release the worker slot from the pool
+		to ensure that the worker slot is released before the WaitGroup counter is decremented.
+	*/
+
 	go func() {
 		// Decrement WaitGroup counter
 		defer c.wg.Done()
@@ -102,12 +109,15 @@ The function returns the path to the directory if found, otherwise it throws an 
 func (c *counter) LookForDirectory(directoryName string) (string, error) {
 	var foundPath string
 
+	// Walk the directory tree and look for the directory
 	err := filepath.WalkDir(c.root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
+		// Check if the current entry is a directory and matches the name
 		if d.IsDir() && d.Name() == directoryName {
+			// Store the path to the directory with the joined path
 			foundPath = filepath.Join(c.root, directoryName)
 			return nil
 		}
