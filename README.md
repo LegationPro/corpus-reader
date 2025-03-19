@@ -43,6 +43,18 @@ curl -X POST -H "Content-Type: application/json" -d '{"directory":"corpus", "wor
 - You are welcome to enhance the challenge in any manner you prefer.
 
 
+# Project Structure
+
+- cmd : Contains the application files for server and cli
+- internal: Contains the internal logic of the application
+- internal/cli: Contains CLI logic
+- internal/server: Contains server logic
+- internal/service: Contains service logic
+- internal/logger: Contains logger implementation
+- internal/service/counter: Contains counter logic
+
+
+
 # Running the application :
 
 ```sh
